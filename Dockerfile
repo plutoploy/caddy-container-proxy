@@ -12,7 +12,7 @@ RUN if [ -n "$CADDY_VERSION" ]; then CADDY_REF="v${CADDY_VERSION}"; else CADDY_R
     --with github.com/caddy-dns/cloudflare \
     --with github.com/WeidiDeng/caddy-cloudflare-ip \
     --with github.com/fvbommel/caddy-combine-ip-ranges \
-    --with github.com/AnswerDotAI/caddy-sqlite-router
+    --with github.com/plutoploy/caddy-container
 
 
 # Final stage
