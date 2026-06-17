@@ -41,20 +41,20 @@ jobs:
       #     username: ${{ secrets.QUAY_USERNAME }}
       #     password: ${{ secrets.QUAY_PASSWORD }}
 
-      - name: Extract metadata (tags, labels) — Alpine
-        id: meta-alpine
-        uses: docker/metadata-action@master
-        with:
-          images: |
-            ghcr.io/${{ github.repository }}
-            # docker.io/${{ github.repository }}
-            # quay.io/${{ github.repository }}
-          tags: |
-            type=raw,value=latest
-            type=raw,value=alpine
+      # - name: Extract metadata (tags, labels) — Alpine
+      #   id: meta-alpine
+      #   uses: docker/metadata-action@master
+      #   with:
+      #     images: |
+      #       ghcr.io/${{ github.repository }}
+      #       # docker.io/${{ github.repository }}
+      #       # quay.io/${{ github.repository }}
+      #     tags: |
+      #       type=raw,value=latest
+      #       type=raw,value=alpine
 
-      - name: Extract metadata (tags, labels) — Debian
-        id: meta-debian
+      - name: Extract metadata (tags, labels) 
+        id: meta-latest
         uses: docker/metadata-action@master
         with:
           images: |
@@ -62,22 +62,13 @@ jobs:
             # docker.io/${{ github.repository }}
             # quay.io/${{ github.repository }}
           tags: |
-            type=raw,value=debian
+            type=raw,value=alpine
 
       - name: Build and push Alpine image
         uses: docker/build-push-action@master
         with:
           context: .
-          file: ./Containerfile.alpine
-          push: true
-          tags: ${{ steps.meta-alpine.outputs.tags }}
-          labels: ${{ steps.meta-alpine.outputs.labels }}
-
-      - name: Build and push Debian image
-        uses: docker/build-push-action@master
-        with:
-          context: .
           file: ./Containerfile
           push: true
-          tags: ${{ steps.meta-debian.outputs.tags }}
-          labels: ${{ steps.meta-debian.outputs.labels }}
+          tags: ${{ steps.meta-latest.outputs.tags }}
+          labels: ${{ steps.meta-latest.outputs.labels }}

@@ -1,7 +1,7 @@
+# Build stage
+FROM docker.io/caddy:alpine AS builder
 
-FROM docker.io/caddy:builder AS builder
-
-RUN apt-get update && apt-get install -y --no-install-recommends gcc musl-dev build-base go git
+RUN apk add --no-cache gcc musl-dev build-base go git
 
 ENV CGO_ENABLED=1
 ENV PATH="/root/go/bin:${PATH}"
@@ -15,8 +15,7 @@ RUN xcaddy build \
     --with github.com/fvbommel/caddy-combine-ip-ranges \
     --with github.com/plutoploy/caddy-container
 
+# Final stage
+FROM docker.io/caddy:alpine
 
-FROM docker.io/caddy:latest
-
-# Copy the custom-built Caddy binary
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
