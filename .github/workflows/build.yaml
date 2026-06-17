@@ -1,12 +1,20 @@
 name: Build and Push to GHCR
+
 on:
   push:
+    branches: [main]
+    tags: ["v*"]
   workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
   id-token: write
+  attestations: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.event.repository.name }}
 
 jobs:
   build:
@@ -19,20 +27,36 @@ jobs:
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
-          image: ghcr.io/${{ github.repository }}
-          tags: latest ${{ github.sha }}
+          image: ${{ env.IMAGE_NAME }}
+          tags: latest ${{ github.sha }} ${{ github.ref_name }}
           containerfiles: |
             ./Containerfile
 
       - name: Log in to GitHub Container Registry
         uses: redhat-actions/podman-login@v1
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
       - name: Push to GHCR
+        id: push
         uses: redhat-actions/push-to-registry@v2
         with:
-          image: ghcr.io/${{ github.repository }}
+          image: ${{ steps.build-image.outputs.image }}
           tags: ${{ steps.build-image.outputs.tags }}
+          registry: ${{ env.REGISTRY }}
+
+      - name: Print image URLs
+        run: |
+          echo "Pushed images:"
+          for path in ${{ join(steps.push.outputs.registry-paths, ' ') }}; do
+            echo "  - $path"
+          done
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ github.repository }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
