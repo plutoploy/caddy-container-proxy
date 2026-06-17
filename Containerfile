@@ -1,25 +1,22 @@
-# Build stage
-FROM docker.io/caddy:alpine AS builder
 
-ARG CADDY_VERSION
+FROM docker.io/caddy:builder AS builder
 
-RUN apk add --no-cache gcc musl-dev build-base go git
+RUN apt-get update && apt-get install -y --no-install-recommends gcc musl-dev build-base go git
 
 ENV CGO_ENABLED=1
 ENV PATH="/root/go/bin:${PATH}"
 
 RUN go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
 
-RUN if [ -n "$CADDY_VERSION" ]; then CADDY_REF="v${CADDY_VERSION}"; else CADDY_REF=""; fi; \
-    xcaddy build ${CADDY_REF} \
+RUN xcaddy build \
     --output /usr/bin/caddy \
     --with github.com/caddy-dns/cloudflare \
     --with github.com/WeidiDeng/caddy-cloudflare-ip \
     --with github.com/fvbommel/caddy-combine-ip-ranges \
     --with github.com/plutoploy/caddy-container
 
-# Final stage
-FROM docker.io/caddy:alpine
+
+FROM docker.io/caddy:latest
 
 # Copy the custom-built Caddy binary
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
