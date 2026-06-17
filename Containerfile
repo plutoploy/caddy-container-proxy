@@ -13,7 +13,7 @@ RUN xcaddy build \
     --with github.com/caddy-dns/cloudflare \
     --with github.com/WeidiDeng/caddy-cloudflare-ip \
     --with github.com/fvbommel/caddy-combine-ip-ranges \
-    --with github.com/plutoploy/caddy-container
+    --with github.com/Pratyay360/caddy-container 
 
 # Final stage
 FROM docker.io/caddy:alpine
